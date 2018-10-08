@@ -14,7 +14,7 @@ func TestRateCounter(t *testing.T) {
 	check := func(expected int64) {
 		val := r.Rate()
 		if val != expected {
-			t.Error("Expected ", val, " to equal ", expected)
+			t.Error("Expected ", expected, " to equal ", val)
 		}
 	}
 
@@ -29,7 +29,6 @@ func TestRateCounter(t *testing.T) {
 
 func TestRateCounterResetAndRestart(t *testing.T) {
 	interval := 100 * time.Millisecond
-
 	r := NewRateCounter(interval)
 
 	check := func(expected int64) {
@@ -126,17 +125,17 @@ func TestRateCounterLowResolution(t *testing.T) {
 	check(0)
 	r.Incr(1)
 	check(1)
-	time.Sleep(2 * tenth)
+	time.Sleep(100 * time.Millisecond)
 	r.Incr(1)
 	check(2)
-	time.Sleep(2 * tenth)
+	time.Sleep(25 * time.Millisecond)
 	r.Incr(1)
 	check(3)
-	time.Sleep(interval - 5*tenth)
+	time.Sleep(350 * time.Millisecond)
 	check(3)
-	time.Sleep(2 * tenth)
+	time.Sleep(126 * time.Millisecond)
 	check(1)
-	time.Sleep(2 * tenth)
+	time.Sleep(150 * time.Millisecond)
 	check(0)
 	time.Sleep(2 * tenth)
 	check(0)
@@ -210,7 +209,7 @@ func TestRateCounter_Incr_ReturnsImmediately(t *testing.T) {
 }
 
 func BenchmarkRateCounter(b *testing.B) {
-	interval := 0 * time.Millisecond
+	interval := 1000 * time.Millisecond
 	r := NewRateCounter(interval)
 
 	for i := 0; i < b.N; i++ {
@@ -219,8 +218,20 @@ func BenchmarkRateCounter(b *testing.B) {
 	}
 }
 
+func BenchmarkManyRateCounter(b *testing.B) {
+	interval := 1000 * time.Millisecond
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			r := NewRateCounter(interval)
+			r.Incr(1)
+			r.Rate()
+		}
+	})
+}
+
 func BenchmarkRateCounter_Parallel(b *testing.B) {
-	interval := 0 * time.Millisecond
+	interval := 1000 * time.Millisecond
 	r := NewRateCounter(interval)
 
 	b.RunParallel(func(pb *testing.PB) {

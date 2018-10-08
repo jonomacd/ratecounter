@@ -49,7 +49,7 @@ func TestAvgRateCounterAdvanced(t *testing.T) {
 	time.Sleep(interval - almost)
 	r.Incr(3) // counter = 4, hits = 2
 	check(2.0, 2)
-	time.Sleep(almost)
+	time.Sleep(almost + (20 * time.Millisecond))
 	check(3.0, 1) // counter = 3, hits = 1
 	time.Sleep(2 * interval)
 	check(0, 0)
